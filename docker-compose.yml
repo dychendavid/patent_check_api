@@ -1,0 +1,55 @@
+version: "3"
+
+services:
+  # Rabbit MQ Task Queue
+  # rabbit:
+  #   image: "rabbitmq:3-management"
+  #   ports:
+  #     - "15672:15672"
+  #     - "5672:5672"
+  #   labels:
+  #     NAME: "rabbitmq"
+
+  # # Redis
+  # redis:
+  #   image: "redis:6.2"
+  #   ports:
+  #     - "6379:6379"
+  #   labels:
+  #     NAME: "redis"
+
+  # PostgreSQL
+  db:
+    build:
+      context: .
+      dockerfile: postgres/Dockerfile
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=patent_check
+    labels:
+      NAME: "pg"
+    volumes:
+      - postgresql-data:/var/lib/postgresql-14/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "patent_check"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+
+  api:
+    build:
+      context: .
+    command: python seeder.py
+    container_name: api
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+# Persistent Data Volumes
+volumes:
+  postgresql-data:
