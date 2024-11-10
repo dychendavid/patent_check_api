@@ -1,5 +1,3 @@
-import os
-import json
 from typing import List
 from langchain_openai import ChatOpenAI
 from langchain.prompts.chat import HumanMessagePromptTemplate, ChatPromptTemplate
@@ -16,8 +14,7 @@ from app.domain.analysis.scheme import LLMInfringementAnalysisScheme
 
 class LLMService:
     def checkInfringingByChatOpenAI(scores):
-        os.environ['OPENAI_API_KEY'] = os.getenv('OPENAI_KEY')        
-
+        # NOTE ChatOpenAI will read key from os.environ['OPENAI_API_KEY']
          # 0 is less creativity, 1 is maximum creativity
         llm = ChatOpenAI(
             temperature=0.9,

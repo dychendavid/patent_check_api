@@ -1,5 +1,4 @@
-import json
-import os
+import json, os
 from langchain_openai import OpenAIEmbeddings
 from sqlalchemy import update
 
@@ -9,7 +8,7 @@ from app.domain.product.models import CompanyModel, ProductModel
 with open('assets/company_products.json') as json_file:
     data = json.load(json_file)
 
-def seed_data():
+def seeding_product():
     db = SessionLocal()
     try:
 
@@ -47,5 +46,3 @@ def seed_data():
         print(f"Error seeding products: {e}")
     finally:
         db.close()
-
-seed_data()

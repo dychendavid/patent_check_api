@@ -6,7 +6,7 @@ from app.domain.product.models import CompanyModel, ProductModel, ProductVectorM
 from app.domain.patent.models import PatentClaimVectorModel, PatentClaimModel
 
 
-def seed_product_vector():
+def seeding_product_vector():
     db = SessionLocal()
     try:
         print("Start seeding product embedding.")
@@ -41,7 +41,7 @@ def seed_product_vector():
     finally:
         db.close()
 
-def seed_claim_vector():
+def seeding_claim_vector():
     db = SessionLocal()
     try:
         print("Start seeding claim embedding.")
@@ -75,6 +75,3 @@ def seed_claim_vector():
         print(f"Error seeding ClaimVector: {e}")
     finally:
         db.close()
-
-seed_product_vector()
-seed_claim_vector()

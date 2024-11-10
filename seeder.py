@@ -1,5 +1,8 @@
-# discover table inherited from Base
 from app.infrastructure.database import engine, Base, wait_for_db
+from seeds.patent import seeding_patent
+from seeds.product import seeding_product
+from seeds.embedding import seeding_claim_vector, seeding_product_vector
+# discover table inherited from Base
 import app.domain.patent.models
 import app.domain.product.models
 import app.domain.llm.models
@@ -14,8 +17,8 @@ print("Creating all tables.")
 Base.metadata.create_all(bind=engine)
 
 # seeding
-import seeds.patent
-import seeds.product
-
+seeding_patent()
+seeding_product()
 # embedding must after patent & product
-import seeds.embedding
+seeding_claim_vector()
+seeding_product_vector()

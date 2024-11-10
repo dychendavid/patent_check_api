@@ -5,7 +5,7 @@ from app.domain.patent.models import PatentModel, PatentClaimModel, PatentExtraM
 with open('assets/patents.json') as json_file:
     data = json.load(json_file)
 
-def seed_data():
+def seeding_patent():
     db = SessionLocal()
     try:
         print("Start seeding Patents.")
@@ -66,5 +66,3 @@ def seed_data():
         print(f"Error seeding Patent: {e}")
     finally:
         db.close()
-
-seed_data()
