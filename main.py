@@ -13,12 +13,7 @@ app = FastAPI()
 app.include_router(AnalysisRouter)
 
 # allow cors
-origins = [
-    "http://localhost",
-
-    # frontend
-    "http://localhost:3000",
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
