@@ -2,6 +2,51 @@ This project is an backend for Patent Infringement Check Requirements.
 
 ---
 
+### How to launch
+
+#### Launch by docker-compose
+
+- clone this repository
+  - `git clone https://github.com/dychendavid/patent_check_api`
+- put .env in the folder(below sample)
+- startup python + postgres
+  - `docker compose up -d`
+- alternative with `--build` for code/.env updates
+  - `docker compose up -d --build`
+- test db connection and api in browser
+  - `http://{localhost}:8000/db_test`
+- seeding data by api call
+  - `http://{localhost}:8000/db_seeder`
+  - or this command
+  - `docker compose exec python python seeder.py`
+
+#### Launch native python + docker-compose
+
+- clone this repository
+  - `git clone https://github.com/dychendavid/patent_check_api`
+- put .env in the folder(below sample)
+- remove the _python_ service in docker-compose.yml
+- startup postgres
+  - `docker compose up -d`
+- execute your python
+  - ex: `fastapi dev`
+- test db connection and api in browser
+  - `http://{localhost}:8000/db_test`
+- seeding data by api call
+  - `http://{localhost}:8000/db_seeds`
+  - or this command
+  - ex: `python seeder.py`
+
+```
+. env sample, DB_HOST needs same with service name in docker compose
+DB_HOST=postgresql
+DB_NAME=patent_check
+DB_USER=postgres
+DB_PASS=postgres
+```
+
+---
+
 ### Improving Plan
 
 - Fuzzy match for company name, probably using `pg_trgm` (Text Based Similarity), since it more suitable than `pg_vector` (Vector Similarity)
