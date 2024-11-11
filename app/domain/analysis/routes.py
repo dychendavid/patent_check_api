@@ -18,15 +18,16 @@ router = APIRouter()
 
 @router.post("/api/v1/analysis/check")
 def check_infringement(publication_number: str, company_name: str, db:Session = Depends(get_db)):
-    # ee.emit('message_event', post_content="abc", aaa="bbb")
-    print('aa')
     # TODO make it afford to fuzzy match with CompanyModel.name_vector
     company:CompanyModel = db.query(CompanyModel).filter(CompanyModel.name==company_name).first()
     if company is None:
         raise HTTPException(status_code=404, detail={'message': "No Result Found"})
 
     patent:PatentModel = db.query(PatentModel).filter(PatentModel.publication_number==publication_number).first()
-    print(publication_number, company_name)
+    if patent is None:
+        raise HTTPException(status_code=404, detail={'message': "No Result Found"})
+
+
     result = AnalysisService.check_infringement(patent.id, company.id)
     return AnalysisService.output_formatter(publication_number=publication_number, \
                                                     company_name=company_name, \
