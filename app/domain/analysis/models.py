@@ -1,7 +1,6 @@
 import enum
 from sqlalchemy import Column, Integer, String, Enum, Text, UniqueConstraint
 from sqlalchemy.types import ARRAY
-
 from app.infrastructure.database import BaseModel
 
 

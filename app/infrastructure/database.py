@@ -1,7 +1,8 @@
 # database.py
-import os, time
+import os
+import time
 from sqlalchemy import create_engine, Column, DateTime
-from sqlalchemy.orm import sessionmaker, session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 from dotenv import load_dotenv
@@ -9,7 +10,7 @@ load_dotenv()
 
 
 SQLALCHEMY_DATABASE_URL = f"postgresql+psycopg2://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}?client_encoding=utf8"
-print(SQLALCHEMY_DATABASE_URL)
+
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
@@ -23,6 +24,8 @@ def get_db():
 
 class BaseModel(Base):
     __abstract__ = True
+
+    # pylint: disable=not-callable
     created_at = Column(DateTime(timezone=True), nullable=False, default=func.now(), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=False, default=func.now(), server_default=func.now(), onupdate=func.now(), server_onupdate=func.now())
 

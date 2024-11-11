@@ -1,7 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, Text, JSON, DateTime, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.types import ARRAY
-from pgvector.sqlalchemy import Vector
-
 from app.infrastructure.database import BaseModel
 
 

@@ -1,21 +1,21 @@
 import json
 from typing import List
-from fastapi import Depends
 from datetime import datetime
-from sqlalchemy import Select
+from fastapi import Depends
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import text
-from app.infrastructure.database import engine, SessionLocal, get_db
-from app.domain.patent.models import PatentModel, PatentClaimModel
+from sqlalchemy import select, func, text
+from app.infrastructure.database import get_db
+from app.domain.patent.models import PatentModel
 from app.domain.product.models import ProductModel, CompanyModel
 from app.domain.llm.llm_service import LLMService
 from app.domain.llm.models import ProductClaimDistance, ProductPatentScore
 from app.domain.llm.score_service import ScoreService
-from app.domain.analysis.models import AnalysisProductModel, AnalysisModel, LevelEnum
-from app.domain.analysis.scheme import APIAnalysisProductScheme, APIAnalysisScheme, LLMInfringementAnalysisScheme, LLMInfringementProductScheme
+from app.domain.analysis.models import AnalysisProductModel, AnalysisModel, UserAnalysisModel
+from app.domain.analysis.scheme import APIAnalysisProductScheme, APIAnalysisScheme, LLMInfringementAnalysisScheme
 
-class AnalysisService:
-    def output_formatter(publication_number:str, company_name: str, llm_res:LLMInfringementAnalysisScheme, analysis:dict) -> str:
+class AnalysisService:    
+    @classmethod
+    def output_formatter(cls, publication_number:str, company_name: str, llm_res:LLMInfringementAnalysisScheme, analysis:dict) -> str:
         analysis_date:datetime = analysis["created_at"]
 
         products = [APIAnalysisProductScheme(
@@ -25,7 +25,7 @@ class AnalysisService:
             explanation= product['explanation'],
             specific_features=product['features'])
             for product in llm_res['products']]
-        print(analysis)
+
         return APIAnalysisScheme(
             analysis_id=str(analysis["id"]),
             patent_id=publication_number,
@@ -34,33 +34,9 @@ class AnalysisService:
             overall_risk_assessment=analysis["assessment"],
             top_infringing_products=products)
     
-    def output_formatter2(analysis:dict) -> str:
-        analysis_date:datetime = analysis["created_at"]
-        print('analysis', type(analysis))
-        print('analysis products', type(analysis["products"]))
-        for p in analysis['products']:
-            print(p)
-
-        products = [APIAnalysisProductScheme(
-            product_name=product["product_name"],
-            infringement_likelihood=product["likelihood"],
-            relevant_claims = [str(claim_id) for claim_id in product['claim_ids']],
-            explanation= product['explanation'],
-            specific_features=product['features'])
-            for product in analysis['products']]
-                
-        return APIAnalysisScheme(
-            analysis_id=str(analysis["id"]),
-            patent_id=analysis["publication_number"],
-            company_name=analysis["company_name"],
-            analysis_date=analysis_date.strftime("%Y-%m-%d"),
-            overall_risk_assessment=analysis["assessment"],
-            top_infringing_products=products)
-
 
     @classmethod
-    def check_infringement(cls, patent_id: int, company_id: int):
-        db = SessionLocal()
+    def check_infringement(cls, patent_id: int, company_id: int, db:Session = Depends(get_db)):
 
         # runtime calculate distance if first time
         # NOTE later could optimized as cron version, don't calculate on runtime for better experience
@@ -117,3 +93,40 @@ class AnalysisService:
             "analysis": analysis.as_dict(),
         }
 
+    @classmethod
+    def get_history_analysis(cls, user_id: int, status: int, db:Session = Depends(get_db)):
+        stmt = (
+            select(
+                AnalysisModel.id.label('analysis_id'),
+                AnalysisModel.assessment.label('overall_risk_assessment'),
+                PatentModel.publication_number.label('patent_id'),
+                CompanyModel.name.label('company_name'),
+                AnalysisModel.created_at.label('analysis_date'),
+                func.json_agg(
+                    func.json_build_object(
+                        'product_name', ProductModel.name,
+                        'infringement_likelihood', AnalysisProductModel.likelihood,
+                        'specific_features', AnalysisProductModel.features,
+                        'explanation', AnalysisProductModel.explanation,
+                        'relevant_claims', AnalysisProductModel.claim_ids,
+                )).label('top_infringing_products'),
+            )
+            .select_from(UserAnalysisModel)
+            .join(AnalysisModel, UserAnalysisModel.analysis_id==AnalysisModel.id)
+            .join(AnalysisProductModel, AnalysisModel.id==AnalysisProductModel.analysis_id)
+
+            .join(ProductModel, AnalysisProductModel.product_id==ProductModel.id)
+            .join(CompanyModel, AnalysisModel.company_id==CompanyModel.id) \
+            .join(PatentModel, PatentModel.id==AnalysisModel.patent_id) \
+
+            .filter(UserAnalysisModel.user_id==user_id, UserAnalysisModel.status==status) \
+            .group_by(
+                    AnalysisModel.id,
+                    CompanyModel.name,
+                    PatentModel.publication_number,
+                    AnalysisModel.assessment, 
+                    AnalysisModel.created_at,
+                    )
+        )
+
+        return db.execute(stmt).mappings().all()    

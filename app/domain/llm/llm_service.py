@@ -1,21 +1,14 @@
-from typing import List
 from langchain_openai import ChatOpenAI
-from langchain.prompts.chat import HumanMessagePromptTemplate, ChatPromptTemplate
+from langchain.prompts.chat import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.prompts import FewShotPromptTemplate, PromptTemplate
-
 from app.infrastructure.logger import logging
-from app.domain.llm.models import ProductClaimDistance, ProductPatentScore
 from app.domain.analysis.scheme import LLMInfringementAnalysisScheme
 
 
-
-
-
 class LLMService:
-    def checkInfringingByChatOpenAI(scores):
+    @classmethod
+    def checkInfringingByChatOpenAI(cls, scores):
         # NOTE ChatOpenAI will read key from os.environ['OPENAI_API_KEY']
-         # 0 is less creativity, 1 is maximum creativity
         llm = ChatOpenAI(
             temperature=0.9,
             model_kwargs={"response_format": {"type": "json_object"}}
@@ -41,6 +34,5 @@ class LLMService:
             res = chain.invoke(invokeParam)
             return res.content
 
-            # TODO save llm logs
         except Exception as e:
             print(f"Error llm invoke: {e}")

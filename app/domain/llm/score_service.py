@@ -1,5 +1,7 @@
+from fastapi import Depends
+from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
-from app.infrastructure.database import SessionLocal
+from app.infrastructure.database import get_db
 from app.domain.llm.models import ProductClaimDistance, ProductPatentScore
 
 
@@ -18,16 +20,14 @@ class ScoreService:
         return scores
 
     @classmethod
-    def getTopInfringingAggClaims(cls, company_id, patent_id, limit=2):
-        db = SessionLocal()
+    def getTopInfringingAggClaims(cls, company_id, patent_id, limit=2, db:Session = Depends(get_db)):
         return db.query(ProductPatentScore) \
             .filter(ProductPatentScore.company_id==company_id, ProductPatentScore.patent_id==patent_id) \
             .order_by(ProductPatentScore.score.desc()).limit(limit).all()
 
 
     @classmethod
-    def calculateAndInsertScores(cls):
-        db = SessionLocal()
+    def calculateAndInsertScores(cls, db:Session = Depends(get_db)):
 
         # formula: sum up by claims which afford threshold, this way considered claim's contribution and relevants
         query = text(f"""INSERT INTO {ProductPatentScore.__tablename__} (company_id, product_id, product_name, product_desc, patent_id, claim_ids, claim_descs, score)

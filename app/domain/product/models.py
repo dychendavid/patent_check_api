@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String, UniqueConstraint
 from pgvector.sqlalchemy import Vector
-
 from app.infrastructure.database import BaseModel
 
 
