@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import app.infrastructure.logger
 from app.domain.analysis.routes import router as AnalysisRouter
-
+from app.infrastructure.database import engine
 
 load_dotenv()
 
@@ -35,9 +35,14 @@ def read_root():
 
 @app.get("/env_test")
 def get_env():
-    return {"DB_NAME": os.getenv('DB_NAME')}
+    return {"DB_HOST": os.getenv('DB_HOST'), "DB_NAME": os.getenv('DB_NAME')}
+
+@app.get("/db_test")
+def db_test():
+    engine.connect()
+    return {"message":"db_test ok"}
 
 @app.get("/seeds")
 def seeder():
     import seeder
-    return {"message":"ok"}
+    return {"message":"seeds ok"}
