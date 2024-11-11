@@ -1,5 +1,4 @@
 from fastapi import Depends, APIRouter, HTTPException
-from app.infrastructure.event_emitter import ee
 # from app.infrastructure.message_broker.rabbitmq import consume
 from sqlalchemy import select, func, text, update
 from sqlalchemy.orm import Session

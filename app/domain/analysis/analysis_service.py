@@ -5,7 +5,6 @@ from datetime import datetime
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
-from app.infrastructure.event_emitter import ee
 from app.infrastructure.database import engine, SessionLocal, get_db
 from app.domain.patent.models import PatentModel, PatentClaimModel
 from app.domain.product.models import ProductModel, CompanyModel

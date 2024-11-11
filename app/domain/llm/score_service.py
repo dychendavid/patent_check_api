@@ -1,6 +1,4 @@
 from sqlalchemy.sql import text
-
-from app.infrastructure.event_emitter import ee
 from app.infrastructure.database import SessionLocal
 from app.domain.llm.models import ProductClaimDistance, ProductPatentScore
 
