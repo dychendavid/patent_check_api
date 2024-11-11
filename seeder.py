@@ -9,7 +9,7 @@ import app.domain.llm.models
 import app.domain.analysis.models
 
 # make sure db is ready
-wait_for_db(60, 5)
+# wait_for_db(60, 5)
 
 print("Dropping all tables.")
 Base.metadata.drop_all(bind=engine)

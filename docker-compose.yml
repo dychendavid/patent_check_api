@@ -32,23 +32,14 @@ services:
       NAME: "pg"
     volumes:
       - postgresql-data:/var/lib/postgresql-14/data
-      healthcheck:
-        test: ["CMD-SHELL", "pg_isready", "-d", "patent_check"]
-        interval: 30s
-        timeout: 60s
-        retries: 5
-        start_period: 80s
 
   python:
     build:
       context: .
-    command: python seeder.py
-    container_name: api
     ports:
       - "8000:8000"
     depends_on:
-      db:
-        condition: service_healthy
+      - postgresql
 
 # Persistent Data Volumes
 volumes:
