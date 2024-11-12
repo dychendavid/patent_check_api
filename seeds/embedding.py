@@ -1,10 +1,10 @@
 import numpy as np
+import os
 from langchain_openai import OpenAIEmbeddings
 
 from app.infrastructure.database import SessionLocal
-from app.domain.product.models import CompanyModel, ProductModel, ProductVectorModel
+from app.domain.product.models import ProductModel, ProductVectorModel
 from app.domain.patent.models import PatentClaimVectorModel, PatentClaimModel
-
 
 def seeding_product_vector():
     db = SessionLocal()
@@ -13,12 +13,9 @@ def seeding_product_vector():
 
         products = db.query(ProductModel).with_entities(ProductModel.desc, ProductModel.id, ProductModel.company_id).all()
 
-        # TODO: remove this line, for no waste embed quota
-        # embed = [product.desc for product in products]
-        # embed = embed[0:1]
-
-        # embeddings_model = OpenAIEmbeddings(api_key=os.getenv('OPENAI_KEY'), model="text-embedding-3-small")
-        # embeddings = embeddings_model.embed_documents(embed)
+        embed = [product.desc for product in products]
+        embeddings_model = OpenAIEmbeddings(api_key=os.getenv('OPENAI_API_KEY'), model="text-embedding-3-small")
+        embeddings = embeddings_model.embed_documents(embed)
 
         bulk = []
         product:ProductModel
@@ -27,9 +24,9 @@ def seeding_product_vector():
                 company_id = product.company_id,
                 product_id = product.id,
                 desc = product.desc,
-                # TODO 0 should be replace as idx
-                # desc_vector = embeddings[0]
-                desc_vector = np.random.rand(1536)
+                # TODO vector rand for development
+                # desc_vector = np.random.rand(1536)
+                desc_vector = embeddings[idx],
             ))
         db.bulk_save_objects(bulk)
         db.commit()
@@ -48,22 +45,18 @@ def seeding_claim_vector():
 
         claims = db.query(PatentClaimModel).with_entities(PatentClaimModel.desc, PatentClaimModel.id, PatentClaimModel.patent_id).all()
 
-
-        # TODO: remove this line, for no waste embed quota
-        # embed = [claim.desc for claim in claims]
-        # embed = embed[0:1]
-
-        # embeddings_model = OpenAIEmbeddings(api_key=os.getenv('OPENAI_KEY'), model="text-embedding-3-small")
-        # embeddings = embeddings_model.embed_documents(embed)
+        embed = [claim.desc for claim in claims]
+        embeddings_model = OpenAIEmbeddings(api_key=os.getenv('OPENAI_API_KEY'), model="text-embedding-3-small")
+        embeddings = embeddings_model.embed_documents(embed)
         bulk = []
         for idx, claim in enumerate(claims):
             bulk.append(PatentClaimVectorModel(
                 patent_id = claim.patent_id,
                 claim_id = claim.id,
                 desc = claim.desc,
-                # TODO 0 should be replace as idx
-                # desc_vector = embeddings[0]
-                desc_vector = np.random.rand(1536)
+                # TODO vector rand for development
+                # desc_vector = np.random.rand(1536)
+                desc_vector = embeddings[idx]
 
             ))
         db.bulk_save_objects(bulk)
