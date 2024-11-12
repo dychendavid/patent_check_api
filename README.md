@@ -38,13 +38,20 @@ This project is an backend for Patent Infringement Check Requirements.
   - ex: `python seeder.py`
 
 ```
-# .env sample, DB_HOST needs same with service name in docker compose
-# I'll glad to provide the OPENAI_API_KEY, please let me know
-OPENAI_API_KEY=xxxxx
+# .env sample
+
+# DB_HOST needs same with service name in docker compose
 DB_HOST=postgresql
 DB_NAME=patent_check
 DB_USER=postgres
 DB_PASS=postgres
+
+# This value reference to number of related claims
+QUALIFY_DISTANCE_RANGE=0.45
+
+# I'll glad to provide the OPENAI_API_KEY, please let me know
+OPENAI_API_KEY=xxxxx
+
 ```
 
 ---
