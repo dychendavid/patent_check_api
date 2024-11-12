@@ -61,6 +61,8 @@ class AnalysisService:
 
         # get top infriniging with claim desc and product desc
         scores:List[ProductPatentScore] = ScoreService.getOrAddTopInfringing(company_id, patent_id)
+        if (len(scores) == 0):
+            raise Exception
 
         # ask llm
         res_text = LLMService.checkInfringingByChatOpenAI(scores)

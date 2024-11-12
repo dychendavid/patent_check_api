@@ -23,8 +23,11 @@ def check_infringement(publication_number: str, company_name: str, db:Session = 
     if patent is None:
         raise HTTPException(status_code=404, detail={'message': "No Result Found"})
 
-
-    result = AnalysisService.check_infringement(patent.id, company.id)
+    try:
+        result = AnalysisService.check_infringement(patent.id, company.id)
+    except Exception:
+        raise HTTPException(status_code=404, detail={'message': "No Result Found"})
+        
     return AnalysisService.output_formatter(publication_number=publication_number, \
                                                     company_name=company_name, \
                                                     llm_res=result["res_json"], \
