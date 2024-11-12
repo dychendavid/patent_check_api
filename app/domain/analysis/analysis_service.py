@@ -1,10 +1,8 @@
 import json
 from typing import List
 from datetime import datetime
-from fastapi import Depends
-from sqlalchemy.orm import Session
 from sqlalchemy import select, func, text
-from app.infrastructure.database import get_db
+from app.infrastructure.database import SessionLocal
 from app.domain.patent.models import PatentModel
 from app.domain.product.models import ProductModel, CompanyModel
 from app.domain.llm.llm_service import LLMService
@@ -36,8 +34,8 @@ class AnalysisService:
     
 
     @classmethod
-    def check_infringement(cls, patent_id: int, company_id: int, db:Session = Depends(get_db)):
-
+    def check_infringement(cls, patent_id: int, company_id: int):
+        db = SessionLocal()
         # runtime calculate distance if first time
         # NOTE later could optimized as cron version, don't calculate on runtime for better experience
         if db.query(ProductClaimDistance).filter(CompanyModel.id==company_id, PatentModel.id==patent_id).first() is None:
@@ -94,7 +92,9 @@ class AnalysisService:
         }
 
     @classmethod
-    def get_history_analysis(cls, user_id: int, status: int, db:Session = Depends(get_db)):
+    def get_history_analysis(cls, user_id: int, status: int):
+        db = SessionLocal()
+
         stmt = (
             select(
                 AnalysisModel.id.label('analysis_id'),
