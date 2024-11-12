@@ -22,7 +22,7 @@ class ProductModel(BaseModel):
 class ProductVectorModel(BaseModel):
     __tablename__ = 'product_vectors'
     id = Column(Integer, primary_key=True, index=True)
-    company_id = Column(Integer)
-    product_id = Column(Integer)
+    company_id = Column(Integer, index=True)
+    product_id = Column(Integer, index=True)
     desc = Column(String)
     desc_vector = Column(Vector(1536))

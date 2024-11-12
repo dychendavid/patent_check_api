@@ -13,8 +13,8 @@ class LevelEnum(str, enum.Enum):
 class AnalysisModel(BaseModel):
     __tablename__ = "analyses"
     id = Column(Integer, primary_key=True, index=True)
-    patent_id = Column(Integer)
-    company_id = Column(Integer)
+    patent_id = Column(Integer, index=True)
+    company_id = Column(Integer, index=True)
     assessment = Column(Text)
     risk_level = Column(Enum(LevelEnum))
 
@@ -22,8 +22,8 @@ class AnalysisModel(BaseModel):
 class AnalysisProductModel(BaseModel):
     __tablename__ = "analysis_products"
     id = Column(Integer, primary_key=True, index=True)
-    analysis_id = Column(Integer)
-    product_id = Column(Integer)
+    analysis_id = Column(Integer, index=True)
+    product_id = Column(Integer, index=True)
     claim_ids = Column(ARRAY(Integer))
     likelihood = Column(Enum(LevelEnum))
     explanation = Column(Text)
