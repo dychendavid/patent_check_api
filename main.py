@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import app.infrastructure.logger
 from app.domain.analysis.routes import router as AnalysisRouter
 from app.infrastructure.database import engine
+from seeder import init
 
 load_dotenv()
 
@@ -39,5 +40,5 @@ def db_test():
 
 @app.get("/seeds")
 def seeder():
-    import seeder
+    init()
     return {"message":"seeds ok"}
