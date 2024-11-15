@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, JSON, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Text, JSON, UniqueConstraint, Index
 from pgvector.sqlalchemy import Vector
 
 from app.infrastructure.database import BaseModel
@@ -26,6 +26,15 @@ class PatentModel(BaseModel):
     citations_non_patent = Column(String)
     provenance = Column(String)
     attachment_urls = Column(String)
+
+    __table_args__ = (
+        Index(
+            'idx_patent_publication_number_gin_trgm',
+            'publication_number',
+            postgresql_using='gin',
+            postgresql_ops={'publication_number': 'gin_trgm_ops'}
+        ),
+    )
 
 class PatentClaimModel(BaseModel):
     __tablename__ = 'patent_claims'

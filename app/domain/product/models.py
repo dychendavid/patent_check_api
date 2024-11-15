@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, UniqueConstraint
+from sqlalchemy import Column, Integer, String, UniqueConstraint, Index
 from pgvector.sqlalchemy import Vector
 from app.infrastructure.database import BaseModel
 
@@ -7,7 +7,15 @@ class CompanyModel(BaseModel):
     __tablename__ = "companies"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True)
-    name_vector = Column(Vector(100))
+
+    __table_args__ = (
+        Index(
+            'idx_company_name_gin_trgm',
+            'name',
+            postgresql_using='gin',
+            postgresql_ops={'name': 'gin_trgm_ops'}
+        ),
+    )
 
 class ProductModel(BaseModel):
     __tablename__ = "products"

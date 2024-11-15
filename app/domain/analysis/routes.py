@@ -3,33 +3,33 @@ from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from app.infrastructure.database import get_db
 from app.domain.patent.models import PatentModel
+from app.domain.patent.patent_service import PatentService
+from app.domain.product.models import CompanyModel
+from app.domain.product.product_service import ProductService
 from app.domain.analysis.models import UserAnalysisModel
 from app.domain.analysis.scheme import APISaveAnalysisScheme
 from app.domain.analysis.analysis_service import AnalysisService
-from app.domain.product.models import CompanyModel
-
 
 router = APIRouter()
 
 
 @router.post("/api/v1/analysis/check")
 def check_infringement(publication_number: str, company_name: str, db:Session = Depends(get_db)):
-    # TODO make it afford to fuzzy match with CompanyModel.name_vector
-    company:CompanyModel = db.query(CompanyModel).filter(CompanyModel.name==company_name).first()
+    company:CompanyModel = ProductService.search_company(company_name)
     if company is None:
-        raise HTTPException(status_code=404, detail={'message': "No Result Found"})
+        raise HTTPException(status_code=404, detail={'message': "Company not found"})
 
-    patent:PatentModel = db.query(PatentModel).filter(PatentModel.publication_number==publication_number).first()
+    patent:PatentModel = PatentService.search_patent(publication_number)
     if patent is None:
-        raise HTTPException(status_code=404, detail={'message': "No Result Found"})
+        raise HTTPException(status_code=404, detail={'message': "Patent not found"})
 
     try:
         result = AnalysisService.check_infringement(patent.id, company.id)
-    except Exception:
-        raise HTTPException(status_code=404, detail={'message': "No Result Found"})
+    except Exception as e :
+        raise HTTPException(status_code=404, detail={'message': "Infringement not found"}) from e 
         
-    return AnalysisService.output_formatter(publication_number=publication_number, \
-                                                    company_name=company_name, \
+    return AnalysisService.output_formatter(publication_number=patent.publication_number, \
+                                                    company_name=company.name, \
                                                     llm_res=result["res_json"], \
                                                     analysis=result["analysis"])
     

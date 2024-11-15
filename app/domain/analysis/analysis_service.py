@@ -38,7 +38,7 @@ class AnalysisService:
         db = SessionLocal()
         # runtime calculate distance if first time
         # NOTE later could optimized as cron version, don't calculate on runtime for better experience
-        if db.query(ProductClaimDistance).filter(CompanyModel.id==company_id, PatentModel.id==patent_id).first() is None:
+        if db.query(ProductClaimDistance).filter(ProductClaimDistance.company_id==company_id, ProductClaimDistance.patent_id==patent_id).first() is None:
             # bulk calculate cosine distance between claim desc and product desc
             # 1 company have N products
             # 1 product compared to M claims
@@ -62,7 +62,7 @@ class AnalysisService:
         # get top infriniging with claim desc and product desc
         scores:List[ProductPatentScore] = ScoreService.getOrAddTopInfringing(company_id, patent_id)
         if (len(scores) == 0):
-            raise Exception
+            raise Exception('No ProductPatentScore')
 
         # ask llm
         res_text = LLMService.checkInfringingByChatOpenAI(scores)
@@ -131,4 +131,4 @@ class AnalysisService:
                     )
         )
 
-        return db.execute(stmt).mappings().all()    
+        return db.execute(stmt).mappings().all()
