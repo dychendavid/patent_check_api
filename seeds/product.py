@@ -1,48 +1,38 @@
-import json, os
-from langchain_openai import OpenAIEmbeddings
-from sqlalchemy import update
-
-from app.infrastructure.database import SessionLocal
+import json
+from sqlalchemy import insert
+from app.infrastructure.logger import logger
+from app.infrastructure.database import async_session
 from app.domain.product.models import CompanyModel, ProductModel
 
 with open('assets/company_products.json') as json_file:
     data = json.load(json_file)
 
-def seeding_product():
-    db = SessionLocal()
-    try:
+async def seeding_product():
+    async with async_session() as session:
+        try:
+            logger.info("Seeding Company & Product...")
+            for item in data["companies"]:
+                # create company
+                company = CompanyModel(name = item["name"])
+                session.add(company)
+                await session.flush()
 
-        name_bulk = []
-        print("Start seeding Products.")
-        for item in data["companies"]:
-            company = CompanyModel(
-                name = item["name"]
-            )
-            name_bulk.append(item["name"])
-            db.add(company)
-            db.flush()
+                # bulk create product
+                bulk = []
+                for product in item['products']:
+                    bulk.append(ProductModel(
+                        company_id=company.id,
+                        name = product['name'],
+                        desc = product['description']
+                    ).as_dict())
+                stmt = insert(ProductModel).values(bulk)
+                await session.execute(stmt)
 
-            # bulk insert to patent_claims
-            bulk = []
-            for product in item['products']:
-                patent_claim = ProductModel(
-                    company_id=company.id,
-                    name = product['name'],
-                    desc = product['description']
-                )
-                bulk.append(patent_claim)
-            db.bulk_save_objects(bulk)
+            await session.commit()
+            logger.info(f"{len(data['companies'])} Companies, {len(bulk)} Products seeded successfully.")
 
-        # fill in name vector
-        embeddings_model = OpenAIEmbeddings(api_key=os.getenv('OPENAI_KEY'), model="text-embedding-3-small")
-        embeddings = embeddings_model.embed_documents(name_bulk)
-        for idx, embedding in enumerate(embeddings):
-            update(CompanyModel).where(CompanyModel.id==idx).values(name_vector=embedding)
-
-        db.commit()
-        print(f"{len(data['companies'])} Companies, {len(bulk)} Products seeded successfully.")
-    except Exception as e:
-        db.rollback()
-        print(f"Error seeding products: {e}")
-    finally:
-        db.close()
+        except Exception as e:
+            await session.rollback()
+            logger.error("Error seeding products", exc_info=e)
+        finally:
+            await session.close()

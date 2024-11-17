@@ -1,29 +1,32 @@
-from app.infrastructure.database import engine, Base, wait_for_db
+import asyncio
+from app.infrastructure.logger import logger
+from app.infrastructure.database import engine, Base
 from seeds.patent import seeding_patent
 from seeds.product import seeding_product
 from seeds.embedding import seeding_claim_vector, seeding_product_vector
-# discover table inherited from Base
+
+# discover table to inherite from Base
 import app.domain.patent.models
 import app.domain.product.models
 import app.domain.llm.models
 import app.domain.analysis.models
 
-# make sure db is ready
-# wait_for_db(60, 5)
 
-def init():
-    print("Dropping all tables.")
-    Base.metadata.drop_all(bind=engine)
-    print("Creating all tables.")
-    Base.metadata.create_all(bind=engine)
+async def init():
+    async with engine.begin() as conn:
+        logger.info("Dropping all tables.")
+        await conn.run_sync(Base.metadata.drop_all)
+        logger.info("Creating all tables.")
+        await conn.run_sync(Base.metadata.create_all)
 
     # seeding
-    seeding_patent()
-    seeding_product()
+    await seeding_patent()
+    await seeding_product()
+
     # embedding must after patent & product
-    seeding_claim_vector()
-    seeding_product_vector()
+    await seeding_claim_vector()
+    await seeding_product_vector()
 
 
 if __name__ == "__main__":
-    init()
+    asyncio.run(init())
