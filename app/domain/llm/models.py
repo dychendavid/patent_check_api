@@ -3,7 +3,7 @@ from sqlalchemy.types import ARRAY
 from app.infrastructure.database import BaseModel
 
 
-class ProductClaimDistance(BaseModel):
+class ProductClaimDistanceModel(BaseModel):
     __tablename__ = 'product_claim_distances'
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     company_id = Column(Integer)
@@ -15,7 +15,7 @@ class ProductClaimDistance(BaseModel):
     cosine_distance = Column(Float)
 
 
-class ProductPatentScore(BaseModel):
+class ProductPatentScoreModel(BaseModel):
     __tablename__ = 'product_patent_scores'
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     company_id = Column(Integer)

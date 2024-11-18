@@ -1,9 +1,7 @@
 import os
-from typing import List, Optional
 from sqlalchemy import text, select
 from app.infrastructure.database import async_session
 from app.infrastructure.base_repository import BaseRepository
-from app.domain.patent.models import PatentModel
 from app.domain.llm.models import ProductClaimDistanceModel
 from app.domain.llm.models import ProductPatentScoreModel
 
@@ -65,9 +63,8 @@ class ProductClaimRepository(BaseRepository):
                 SUM(1 - cosine_distance) AS score
                 FROM {ProductClaimDistanceModel.__tablename__} AS pcd
                 JOIN products AS p ON pcd.product_id=p.id
-                WHERE cosine_distance < {QUALIFY_DISTANCE_RANGE}
+                WHERE cosine_distance < {QUALIFY_DISTANCE_RANGE} AND pcd.company_id={company_id} AND pcd.patent_id={patent_id}
                 GROUP BY pcd.product_id, pcd.company_id, pcd.patent_id, p.desc, p.name
-                WHERE pv.company_id={company_id} AND pcv.patent_id={patent_id}
             """)
             await session.execute(stmt)
             await session.commit()

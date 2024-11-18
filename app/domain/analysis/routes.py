@@ -1,31 +1,31 @@
-from fastapi import Depends, APIRouter, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy.dialects.postgresql import insert as pg_insert
-from app.infrastructure.database import get_db
+from fastapi import APIRouter, HTTPException
+from app.infrastructure.logger import logger
+
 from app.domain.patent.models import PatentModel
-from app.domain.patent.patent_service import PatentService
+from app.domain.patent.patent_repository import PatentRepository
 from app.domain.product.models import CompanyModel
-from app.domain.product.product_service import ProductService
-from app.domain.analysis.models import UserAnalysisModel
+from app.domain.product.company_repository import CompanyRepository 
 from app.domain.analysis.scheme import APISaveAnalysisScheme
 from app.domain.analysis.analysis_service import AnalysisService
+from app.domain.analysis.analysis_repository import AnalysisRepository
 
 router = APIRouter()
 
 
 @router.post("/api/v1/analysis/check")
-def check_infringement(publication_number: str, company_name: str, db:Session = Depends(get_db)):
-    company:CompanyModel = ProductService.search_company(company_name)
+async def check_infringement(publication_number: str, company_name: str):
+    company:CompanyModel = await CompanyRepository.search_company(company_name)
     if company is None:
         raise HTTPException(status_code=404, detail={'message': "Company not found"})
 
-    patent:PatentModel = PatentService.search_patent(publication_number)
+    patent:PatentModel = await PatentRepository.search_patent(publication_number)
     if patent is None:
         raise HTTPException(status_code=404, detail={'message': "Patent not found"})
 
     try:
-        result = AnalysisService.check_infringement(patent.id, company.id)
+        result = await AnalysisService.check_infringement(patent.id, company.id)
     except Exception as e :
+        logger.error('check_infringement_error', exc_info=e)
         raise HTTPException(status_code=404, detail={'message': "Infringement not found"}) from e 
         
     return AnalysisService.output_formatter(publication_number=patent.publication_number, \
@@ -35,28 +35,13 @@ def check_infringement(publication_number: str, company_name: str, db:Session = 
     
 
 @router.get("/api/v1/analysis/saved")
-def get_saved_analyses(user_id:int):
-    return AnalysisService.get_history_analysis(user_id, 1)
+async def get_saved_analyses(user_id:int):
+    return await AnalysisRepository.get_history_analyses(user_id, 1)
     
 
 @router.post("/api/v1/analysis")
-def update_analysis_status(data:APISaveAnalysisScheme, db:Session = Depends(get_db)):
-    row = data.model_dump()
-    update_cols = {
-        col.name: row[col.name]
-        for col in UserAnalysisModel.__table__.columns
-        if col.name not in ['id', 'created_at', 'updated_at']
-    }
-
-    # update on Unique(user_id * analysis_id) 
-    stmt = pg_insert(UserAnalysisModel).values(row)
-    stmt = stmt.on_conflict_do_update(
-        constraint='_user_analysis_uc',
-        set_=update_cols
-    )
-
-    db.execute(stmt)
-    db.commit()
+async def update_analysis_status(data:APISaveAnalysisScheme):
+    await AnalysisRepository.update_row_on_dupliate(data.model_dump())
     return {"message":"ok"}
 
 

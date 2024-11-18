@@ -1,13 +1,13 @@
 from langchain_openai import ChatOpenAI
 from langchain.prompts.chat import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
-from app.infrastructure.logger import logging
+from app.infrastructure.logger import logger
 from app.domain.analysis.scheme import LLMInfringementAnalysisScheme
 
 
 class LLMService:
     @classmethod
-    def checkInfringingByChatOpenAI(cls, scores):
+    def check_infringing_by_chat_open_ai(cls, scores):
         # NOTE ChatOpenAI will read key from os.environ['OPENAI_API_KEY']
         llm = ChatOpenAI(
             temperature=0.9,
@@ -28,11 +28,10 @@ class LLMService:
             parser = JsonOutputParser(pydantic_object=LLMInfringementAnalysisScheme)
             invokeParam = {
                 "format_instruction": parser.get_format_instructions(),
-                "input": [score.__dict__ for score in scores],
+                "input": [score.as_dict() for score in scores],
             }
-            logging.debug("invokeParam", invokeParam)
             res = chain.invoke(invokeParam)
             return res.content
 
         except Exception as e:
-            print(f"Error llm invoke: {e}")
+            logger.error("Error llm invoke", exc_info=e)
