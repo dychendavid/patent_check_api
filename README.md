@@ -2,40 +2,46 @@ This project is an backend for Patent Infringement Check Requirements.
 
 ---
 
-[How to pick top infringement](#how-to-pick-top-infringement)
+## Outline
+- [How to launch](#how-to-launch)
+- [ER Diagram](#er-diagram)
+- [How to pick top infringement](#how-to-pick-top-infringement)
 
+---
 
-### How to launch
+## How to launch
 
 #### A. Launch by docker-compose (for production)
 
-- clone this repository
+- Clone this repository
   - `git clone https://github.com/dychendavid/patent_check_api`
-- put `.env` in the folder(below sample)
-- startup python + postgres
+- Put `.env.prod` in the folder
+  - Sample in below
+- Startup python + postgres
   - `docker compose --env-file .env.prod up -d`
-- force rebuild image if code/files update
+- Force rebuild image if code/files update
   - `docker compose build --no-cache`
-- test db connection and api in browser
+- Test db connection and api in browser
   - `http://{localhost}:8000/db_test`
-- reset and seed data by api call
+- NOTE: Reset and Seed data by api call
   - `http://{localhost}:8000/seeds`
   - or this command
   - `docker compose exec python python seeder.py`
 
 #### B. Launch native python + docker-compose (for local development)
 
-- clone this repository
+- Clone this repository
   - `git clone https://github.com/dychendavid/patent_check_api`
-- put `.env` in the folder(below sample)
-- remove the _python_ service in docker-compose.yml
-- startup postgres
+- Put `.env.dev` in the folder
+  - Sample in below
+- Remove the _python_ service in docker-compose.yml
+- Startup postgres
   - `docker compose --env-file .env.dev up -d`
-- execute your python
+- Execute your python
   - ex: `fastapi dev`
-- test db connection and api in browser
+- Test db connection and api in browser
   - `http://{localhost}:8000/db_test`
-- reset and seed data by api call
+- NOTE: Reset and Seed data by api call
   - `http://{localhost}:8000/seeds`
   - or this command
   - ex: `python seeder.py`
@@ -59,10 +65,9 @@ OPENAI_API_KEY=xxxxx
 
 ---
 
+## ER Diagram
+
 ```mermaid
----
-title: ER Diagram
----
 erDiagram
 
     Company ||--|{ Product : contains
@@ -75,14 +80,10 @@ erDiagram
     Patent ||--|{ Analysis : relate
     UserAnalysis ||--|| Analysis : relate
 
-
     Patent ||--|{ Claim : contains
     Patent ||--|| PatentExtra : "vertical partitioning"
     Claim ||--|| ClaimVector : "vertical partitioning"
     ClaimVector ||--|{ ProductClaimDistance : "compared with ProductVector"
-
-
-
 
     Company {
         int id PK
@@ -178,9 +179,8 @@ erDiagram
 ```
 ---
 
-# How to pick top infringement
+## How to pick top infringement
 
-#### Simple Flow
 
 ```mermaid
 flowchart TB
