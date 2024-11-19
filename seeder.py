@@ -1,4 +1,5 @@
 import asyncio
+import app.infrastructure.env
 from app.infrastructure.logger import logger
 from app.infrastructure.database import engine, Base
 from seeds.patent import seeding_patent
@@ -10,7 +11,6 @@ import app.domain.patent.models
 import app.domain.product.models
 import app.domain.llm.models
 import app.domain.analysis.models
-
 
 async def init():
     async with engine.begin() as conn:
@@ -26,7 +26,6 @@ async def init():
     # embedding must after patent & product
     await seeding_claim_vector()
     await seeding_product_vector()
-
 
 if __name__ == "__main__":
     asyncio.run(init())
