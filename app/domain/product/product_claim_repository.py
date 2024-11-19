@@ -26,11 +26,13 @@ class ProductClaimRepository(BaseRepository):
     @classmethod
     async def add_vector_distances(cls, company_id:int, patent_id:int):
         """
-        Calculate and store cosine distances between product descriptions and patent claims vectors.
+        Calculate and store cosine distances between product and claim description vectors.
         
         This method performs a cross-join between product_vectors and patent_claim_vectors tables
         to compute cosine distances between product descriptions and patent claims for a specific
-        company and patent. The results are stored in the product_claim_distance table.
+        company and patent.
+         
+        It will insert products(of specific company) * claims(of specific patent) rows
         """
 
         async with async_session() as session:

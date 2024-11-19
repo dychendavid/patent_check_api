@@ -58,8 +58,6 @@ OPENAI_API_KEY=xxxxx
 
 ### Improving Plan
 
-- Fuzzy match for company name, probably using `pg_trgm` (Text Based Similarity), since it more suitable than `pg_vector` (Vector Similarity)
-  - Cache embedding of keyword
 - Enable RabbitMQ for break heavy task.
 - Enable Socket.Io for non-blocking API communication
 
