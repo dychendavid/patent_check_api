@@ -4,36 +4,36 @@ This project is an backend for Patent Infringement Check Requirements.
 
 ### How to launch
 
-#### Launch by docker-compose
+#### A. Launch by docker-compose (for production)
 
 - clone this repository
   - `git clone https://github.com/dychendavid/patent_check_api`
-- put .env in the folder(below sample)
+- put `.env` in the folder(below sample)
 - startup python + postgres
-  - `docker compose up -d`
-- alternative with `--build` for code/.env updates
-  - `docker compose up -d --build`
+  - `docker compose --env-file .env.prod up -d`
+- force rebuild image if code/files update
+  - `docker compose build --no-cache`
 - test db connection and api in browser
   - `http://{localhost}:8000/db_test`
-- seeding data by api call
-  - `http://{localhost}:8000/db_seeder`
+- reset and seed data by api call
+  - `http://{localhost}:8000/seeds`
   - or this command
   - `docker compose exec python python seeder.py`
 
-#### Launch native python + docker-compose
+#### B. Launch native python + docker-compose (for local development)
 
 - clone this repository
   - `git clone https://github.com/dychendavid/patent_check_api`
-- put .env in the folder(below sample)
+- put `.env` in the folder(below sample)
 - remove the _python_ service in docker-compose.yml
 - startup postgres
-  - `docker compose up -d`
+  - `docker compose --env-file .env.dev up -d`
 - execute your python
   - ex: `fastapi dev`
 - test db connection and api in browser
   - `http://{localhost}:8000/db_test`
-- seeding data by api call
-  - `http://{localhost}:8000/db_seeds`
+- reset and seed data by api call
+  - `http://{localhost}:8000/seeds`
   - or this command
   - ex: `python seeder.py`
 
