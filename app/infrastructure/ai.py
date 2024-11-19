@@ -2,12 +2,13 @@ import os
 import numpy as np
 from langchain_openai import OpenAIEmbeddings
 from app.infrastructure.logger import logger
+from app.infrastructure.env import get_env, EnvEnum
 
 class AI:
     @classmethod
     async def get_embeddings(cls, embeds: list, dimension:int=1536):
 
-        if os.getenv('ENV', 'dev') == "dev":
+        if get_env() == EnvEnum.Development.value:
             logger.warning('Get embedding from np')
             return [np.random.rand(dimension) for embed in embeds]
         else:

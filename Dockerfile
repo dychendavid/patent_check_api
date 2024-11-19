@@ -4,10 +4,12 @@ WORKDIR /app
 
 COPY . .
 
+COPY .env* .
+
 RUN pip install --upgrade pip
 
 RUN pip install -r requirements.txt
 
 EXPOSE 8000
 
-CMD ["ENV=prod", "uvicorn", "main:app", "--reload"]
+CMD ["fastapi", "run"]

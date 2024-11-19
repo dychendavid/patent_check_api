@@ -37,6 +37,6 @@ def db_test():
     return {"message":"db_test ok"}
 
 @app.get("/seeds")
-def seeder():
-    init()
+async def seeder():
+    await init()
     return {"message":"seeds ok"}
