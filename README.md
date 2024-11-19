@@ -2,6 +2,9 @@ This project is an backend for Patent Infringement Check Requirements.
 
 ---
 
+[How to pick top infringement](#how-to-pick-top-infringement)
+
+
 ### How to launch
 
 #### A. Launch by docker-compose (for production)
@@ -56,14 +59,126 @@ OPENAI_API_KEY=xxxxx
 
 ---
 
-### Improving Plan
+```mermaid
+---
+title: ER Diagram
+---
+erDiagram
 
-- Enable RabbitMQ for break heavy task.
-- Enable Socket.Io for non-blocking API communication
+    Company ||--|{ Product : contains
+    Product ||--|| ProductVector : "vertical partitioning"
+    ProductVector ||--|{ ProductClaimDistance : "compared with ClaimVector"
+    ProductClaimDistance ||--o{ ProductPatentScore : aggregated
 
+    Analysis ||--o{ AnalysisProduct : contains
+    Company ||--|{ Analysis : relate
+    Patent ||--|{ Analysis : relate
+    UserAnalysis ||--|| Analysis : relate
+
+
+    Patent ||--|{ Claim : contains
+    Patent ||--|| PatentExtra : "vertical partitioning"
+    Claim ||--|| ClaimVector : "vertical partitioning"
+    ClaimVector ||--|{ ProductClaimDistance : "compared with ProductVector"
+
+
+
+
+    Company {
+        int id PK
+        int name UK
+    }
+
+    Product {
+        int id PK
+        int company_id UK "UK with name"
+        str name UK "UK with company_id"
+        str desc
+    }
+
+    ProductVector {
+        int id PK
+        int company_id 
+        str product_id
+        str desc
+        str desc_vector
+    }
+
+    Patent {
+        int id PK
+        str publication_number UK
+    }
+
+    Claim {
+        int id PK
+        int patent_id UK "UK with num"
+        str num UK "UK with patent_id"
+        str desc
+    }
+
+    PatentExtra {
+        int id PK
+        int patent_id UK
+        str abstract
+        str description
+    }
+
+    ClaimVector {
+        int id PK
+        int patent_id
+        str claim_id
+        str desc
+        str desc_vector
+    }
+
+    Analysis {
+      int id PK
+      int patent_id
+      int company_id
+      str assessment
+      int risk_level
+    }
+
+    AnalysisProduct {
+      int id PK
+      int analysis_id
+      int product_id
+      arr claim_ids
+      int likelihood
+      str explanation
+      arr features
+    }
+
+    UserAnalysis {
+      int id PK
+      int user_id UK "UK with analysis_id"
+      int analysis_id UK "UK with user_id"
+      bool status
+    }
+
+    ProductClaimDistance {
+      int id PK
+      int product_id
+      str product_desc
+      int patent_id
+      int claim_id
+      str claim_desc
+      float cosine_distance
+    }
+
+    ProductPatentScore {
+      int id PK
+      int product_id
+      int patent_id
+      arr claim_ids
+      float score
+    }
+
+
+```
 ---
 
-### How to determine which products is the top possibily infringement products?
+# How to pick top infringement
 
 #### Simple Flow
 
